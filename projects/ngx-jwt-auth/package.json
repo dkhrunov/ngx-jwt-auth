@@ -1,0 +1,32 @@
+{
+	"name": "@dekh/ngx-jwt-auth",
+	"version": "1.0.0",
+	"license": "MIT",
+	"repository": {
+		"type": "GitHub",
+		"url": "https://github.com/dkhrunov/ngx-jwt-auth.git"
+	},
+	"keywords": [
+    "auth",
+    "authentication",
+    "secure",
+		"jwt",
+		"angular",
+		"angular-auth",
+		"angular-authentication"
+	],
+	"author": {
+		"name": "Denis Khrunov",
+		"email": "therealpanda98@gmail.com"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"peerDependencies": {
+		"@angular/common": "^13.3.0",
+		"@angular/core": "^13.3.0"
+	},
+	"dependencies": {
+		"tslib": "^2.3.0"
+	}
+}

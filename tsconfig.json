@@ -11,6 +11,12 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
+    "paths": {
+      "ngx-jwt-auth": [
+        "dist/ngx-jwt-auth/ngx-jwt-auth",
+        "dist/ngx-jwt-auth"
+      ]
+    },
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
