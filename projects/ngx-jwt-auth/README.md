@@ -8,7 +8,7 @@ A library for Token-Based Authentication (JWT Authentication).
 This library is configurable for any use cases.
 
 ## Other languages
-- [Russian](./src/doc/ru/README.md)
+- [Russian](../../doc/ru/README.md)
 
 ## Content
 - [Description](#description)
