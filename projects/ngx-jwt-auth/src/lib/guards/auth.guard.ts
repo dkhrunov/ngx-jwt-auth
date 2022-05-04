@@ -6,7 +6,6 @@ import { JWT_AUTH_CONFIG } from '../injection-tokens';
 import { JwtAuthConfig } from '../jwt-auth-config';
 import { JwtAuthService } from '../services';
 
-
 /**
  * Guard to restrict route access to unauthorized users.
  */

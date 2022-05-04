@@ -4,7 +4,7 @@ import { BaseTokenStorage } from "./token-storages";
 
 export class JwtAuthConfig {
   /**
-   * A class that implements BaseAuthApiService and makes requests to the server for authorization.
+   * A class that implements `BaseAuthApiService` and makes requests to the server for authorization.
    */
   public authApiService!: Type<BaseAuthApiService>;
   /**

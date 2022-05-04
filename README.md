@@ -1,9 +1,14 @@
-# JwtAuth
+# Ngx JWT Auth
+<a href="https://jwt.io/">
+  <img src="https://jwt.io/img/badge-compatible.svg">
+</a>
 
-A library for Token-Based Authentication. This library is configurable for any use cases.
+A library for Token-Based Authentication (JWT Authentication).
+
+This library is configurable for any use cases.
 
 ## Other languages
-- [Russian](./projects/ngx-jwt-auth/src/doc/ru/README.md)
+- [Russian](./doc/ru/README.md)
 
 ## Content
 - [Description](#description)
@@ -34,7 +39,7 @@ Features:
 1. Import `JwtAuthModule` into the App/Core module of your application with a call to the `forRoot` method, and pass parameters to this method:
 
 ```typescript
-import { JwtAuthModule } from 'jwt-auth';
+import { JwtAuthModule } from '@dekh/ngx-jwt-auth';
 
 @NgModule({
   imports: [
@@ -44,7 +49,7 @@ import { JwtAuthModule } from 'jwt-auth';
 export class AppModule {}
 ```
 
-2. You need to create an Api-service by implementing the [BaseAuthApiService](./projects/ngx-jwt-auth/src/lib/services/base-auth-http-service.ts) base class. This class obliges to implement 3 methods `login`, `logout` and `refresh`. The `login` and `refresh` methods must return an Observable with the value `{ accessToken: string; refreshToken?: string; }`, if your server in the `login` authorization method and\or in the `refresh` access token refresh method returns a different format, then it is quite easy to map the value with the `map` operator from rxjs to the desired format. An example of such a service:
+2. You need to create an Api-service by implementing the [BaseAuthApiService](./projects/ngx-jwt-auth/src/lib/services/base-auth-api-service.ts) base class. This class obliges to implement 3 methods `login`, `logout` and `refresh`. The `login` and `refresh` methods must return an Observable with the value `{ accessToken: string; refreshToken?: string; }`, if your server in the `login` authorization method and\or in the `refresh` access token refresh method returns a different format, then it is quite easy to map the value with the `map` operator from rxjs to the desired format. An example of such a service:
 
 ```typescript
 @Injectable({
@@ -97,7 +102,7 @@ import {
   JwtAuthModule,
   InMemoryTokenStorage,
   LocalStorageTokenStorage
-} from 'jwt-auth';
+} from '@dekh/ngx-jwt-auth';
 import { AuthApiService } from '../services';
 
 @NgModule({
@@ -127,7 +132,7 @@ import {
   InMemoryTokenStorage,
   LocalStorageTokenStorage,
   JwtAuthInterceptor
-} from 'jwt-auth';
+} from '@dekh/ngx-jwt-auth';
 import { AuthApiService } from '../services';
 
 @NgModule({
@@ -219,7 +224,7 @@ In the example below, only an unauthorized user can access the `/auth/login` and
 ```typescript
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AuthGuard, UnAuthGuard } from 'jwt-auth';
+import { AuthGuard, UnAuthGuard } from '@dekh/ngx-jwt-auth';
 import { LoginComponent, RegistrationComponent } from '../auth';
 import { DashboardComponent } from '../dashboard';
 
@@ -254,7 +259,7 @@ export class AppRoutingModule {}
 ```
 
 ## Description of all library parameters
-- `authApiService: Type<BaseAuthApiService>` - A class that implements BaseAuthApiService and makes requests to the server.
+- `authApiService: Type<BaseAuthApiService>` - A class that implements `BaseAuthApiService` and makes requests to the server.
 
 - `tokenStorage: Type<BaseTokenStorage>` - Storage of regular jwt tokens (not authorization ones).
 
@@ -304,7 +309,7 @@ In order to create your own token storage, it is enough to implement the [BaseTo
 
 ```typescript
 // my-custom-token-storage.ts
-import { BaseTokenStorage } from 'jwt-auth';
+import { BaseTokenStorage } from '@dekh/ngx-jwt-auth';
 
 export class MyCustomTokenStorage extends BaseTokenStorage {
   public get(key: string): string | null {
@@ -332,7 +337,7 @@ We define our storage in the parameters of the `JwtAuthModule` module:
 
 ```typescript
 // app.module.ts
-import { JwtAuthModule } from 'jwt-auth';
+import { JwtAuthModule } from '@dekh/ngx-jwt-auth';
 import { MyCustomTokenStorage } from '../auth';
 
 @NgModule({
@@ -345,15 +350,26 @@ import { MyCustomTokenStorage } from '../auth';
 export class AppModule {}
 ```
 
-Or we can register our storage using the `TokenStorage Registry` service:
+Or we can register our storage using the `TokenStorageRegistry` service:
 
 ```typescript
 // app.service.ts
-import { TokenStorageRegistry } from 'jwt-auth';
+import {
+  LocalStorageTokenStorage,
+  InMemoryTokenStorage,
+  TokenStorageRegistry
+} from '@dekh/ngx-jwt-auth';
+import { AuthApiService } from '../services';
 import { MyCustomTokenStorage } from '../auth';
 
-@Injactable({
-  provideIn: 'root'
+@NgModule({
+  imports: [
+    JwtAuthModule.forRoot({
+      authApiService: AuthApiService,
+      tokenStorage: LocalStorageTokenStorage,
+      authTokenStorage: InMemoryTokenStorage,
+    }),
+  ],
 })
 export class AppModule {
   constructor(private readonly _tokenStorageRegistry: TokenStorageRegistry) {
@@ -362,28 +378,26 @@ export class AppModule {
 }
 ```
 
-Source code of the `TokenStorageRegistry` [here](./projects/ngx-jwt-auth/src/lib/services/token-storage-registry.service.ts).
-
 ## Changing token storage at runtime
 
-In rare cases, you may need to change the token storage at runtime, for this there are two services [TokenStorageManager](./projects/ngx-jwt-auth/src/lib/services/token-storage-manager.service.ts) and [AuthTokenStorageManager](./projects/ngx-jwt-auth/src/lib/services /auth-token-storage-manager.service.ts), both of these services have the same interaction interface. `TokenStorageManager` is used to manage the storage of __non-authorization__ tokens, and `AuthTokenStorageManager` is used to manage the storage of __authorization__ tokens.
+In rare cases, you may need to change the token storage at runtime, for this there are two services [TokenStorageManager](./projects/ngx-jwt-auth/src/lib/services/token-storage-manager.service.ts) and [AuthTokenStorageManager](./projects/ngx-jwt-auth/src/lib/services/auth-token-storage-manager.service.ts), both of these services have the same interaction interface. `TokenStorageManager` is used to manage the storage of __non-authorization__ tokens, and `AuthTokenStorageManager` is used to manage the storage of __authorization__ tokens.
 
-Пример:
+Example:
 
 ```typescript
-// app.service.ts
+// token-storage-changer.service.ts
 import {
   AuthTokenStorageManager,
   TokenStorageRegistry,
   CookiesTokenStorage,
   BaseTokenStorage,
-} from 'jwt-auth';
+} from '@dekh/ngx-jwt-auth';
 import { MyCustomTokenStorage } from '../auth';
 
-@Injactable({
-	provideIn: 'root'
+@Injectable({
+  provideIn: 'root'
 })
-export class AppModule {
+export class TokenStorageChangerService {
   constructor(
     private readonly _authTokenStorageManager: AuthTokenStorageManager,
     private readonly _tokenStorageRegistry: TokenStrageRegistry,
@@ -425,4 +439,4 @@ export class AppModule {
 
   The reason for this error is a cyclic call to `JwtAuthInterceptor`. Since the interceptor handles every request, except for those url requests specified in the `unsecuredUrls` config parameter, the token refresh request creates a circular dependency.
 
-  The solution to this problem is to specify in the `unsecuredUrls` array the URL or path of the accessToken update request, or specify the root path for all requests related to user authorization/registration, for example: `"/auth/"`, then all requests c path auth will be excluded from the interceptor check - `server.api/auth/login`, `server.api/auth/register`, `server.api/auth/refresh` and the like.
+  The solution to this problem is to specify in the `unsecuredUrls` array the URL or path of the accessToken update request, or specify the root path for all requests related to user authorization/registration, for example: `"/auth/"`, then all requests c path auth will be excluded from the interceptor check - `server.api/auth/login`, `server.api/auth/register`, `server.api/auth/refresh` and etc.

@@ -6,7 +6,7 @@ export interface IAuthApiService {
   /**
    * Make request to logIn user.
    * 
-   * Request should return object `{ accessToken: string, refreshToken: string }`.
+   * Request should return object `{ accessToken: string, refreshToken?: string }`.
    * If yours backend return different json, just map your data to necessary object (use`map` RxJs operator).
    * 
    * @param args all arguments.
@@ -23,7 +23,7 @@ export interface IAuthApiService {
   /**
    * Make request to refresh access token.
    * 
-   * Request should return object `{ accessToken: string, refreshToken: string }`.
+   * Request should return object `{ accessToken: string, refreshToken?: string }`.
    * If yours backend return different json, just map your data to necessary object (use`map` RxJs operator).
    * 
    * @param args all arguments.

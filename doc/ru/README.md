@@ -1,9 +1,11 @@
-# JwtAuth
+# Ngx JWT Auth
+<a href="https://jwt.io/">
+  <img src="https://jwt.io/img/badge-compatible.svg">
+</a>
 
 Библиотека для Token-Based Authentication на основе Access и Refresh токенов.
 
-## На других языках
-- [English](../en/README.md)
+Эта библиотека настраивается для любых вариантов использования.
 
 ## Содержание
 - [Описание](#описание)
@@ -22,19 +24,19 @@
 - выбирать где будут храниться токены, выбирая хранилище токенов (подробнее далее);
 - изменять хранилища токенов прямо в рантайме (подробнее далее);
 - создать свое кастомное хранилище токенов (подробнее далее);
-- автоматически обновлять токен доступа (access token). Обновление происходит либо по истечению срока валидности токена доступа, либо указать коэффициент протухания токена `refreshThreshold` по достижению которого будет выполнено обновление токена, для этих целей используется interceptor [JwtAuthInterceptor](../../lib/interceptors/jwt-auth.interceptor.ts).
-- ограничивать доступ на определенные роуты для не авторизованных пользователей, используя [AuthGuard](../../lib/guards/auth.guard.ts);
-- ограничивать доступ на определенные роуты для авторизованных пользователей, используя [UnAuthGuard](../../lib/guards/un-auth.guard.ts);
-- подписаться на поток `isLoggedIn$`, в котором храниться текущий статус аутентификации пользователя [JwtAuthService](../../lib/services/jwt-auth.service.ts);
-- самому управлять токенами (получит, удалить, сохранить токен) через сервис [AuthTokenManager](../../lib/services/auth-token-manager.service.ts);
-- управлять не только авторизационнами токенами, а любыми другими JWT токенами для этих целей выделены отдельные настройки в `JwtAuthModule`, отдельное хранилище токенов (можно использовать те же предопределенные хранилища, либо создать свое), отдельный сервис для работы с токенами [TokenManager](../../lib/services/token-manager.service.ts) и отдельный сервис для управления хранилищем токенов [TokenStorageManager](../../lib/services/token-storage-manager.service.ts).
-- расширить базовые возможности путем создания кастомных хранилищ токенов, кастомных решений для управления токенами (расширить [BaseTokenManager](../../lib/services/base-token-manager.ts)) и хранилищами токенов (расширить [BaseTokenStorageManager](../../lib/services/base-token-storage-manager.ts)).
+- автоматически обновлять токен доступа (access token). Обновление происходит либо по истечению срока валидности токена доступа, либо указать коэффициент протухания токена `refreshThreshold` по достижению которого будет выполнено обновление токена, для этих целей используется interceptor [JwtAuthInterceptor](../../projects/ngx-jwt-auth/src/lib/interceptors/jwt-auth.interceptor.ts).
+- ограничивать доступ на определенные роуты для не авторизованных пользователей, используя [AuthGuard](../../projects/ngx-jwt-auth/src/lib/guards/auth.guard.ts);
+- ограничивать доступ на определенные роуты для авторизованных пользователей, используя [UnAuthGuard](../../projects/ngx-jwt-auth/src/lib/guards/un-auth.guard.ts);
+- подписаться на поток `isLoggedIn$`, в котором храниться текущий статус аутентификации пользователя [JwtAuthService](../../projects/ngx-jwt-auth/src/lib/services/jwt-auth.service.ts);
+- самому управлять токенами (получит, удалить, сохранить токен) через сервис [AuthTokenManager](../../projects/ngx-jwt-auth/src/lib/services/auth-token-manager.service.ts);
+- управлять не только авторизационнами токенами, а любыми другими JWT токенами для этих целей выделены отдельные настройки в `JwtAuthModule`, отдельное хранилище токенов (можно использовать те же предопределенные хранилища, либо создать свое), отдельный сервис для работы с токенами [TokenManager](../../projects/ngx-jwt-auth/src/lib/services/token-manager.service.ts) и отдельный сервис для управления хранилищем токенов [TokenStorageManager](../../projects/ngx-jwt-auth/src/lib/services/token-storage-manager.service.ts).
+- расширить базовые возможности путем создания кастомных хранилищ токенов, кастомных решений для управления токенами (расширить [BaseTokenManager](../../projects/ngx-jwt-auth/src/lib/services/base-token-manager.ts)) и хранилищами токенов (расширить [BaseTokenStorageManager](../../projects/ngx-jwt-auth/src/lib/services/base-token-storage-manager.ts)).
 
 ## Настройка и применение
 1. Импортировать `JwtAuthModule` в root/core модуль вашего приложения с вызовом метода `forRoot`, и в данный метод передать параметры:
 
 ```typescript
-import { JwtAuthModule } from 'jwt-auth';
+import { JwtAuthModule } from '@dekh/ngx-jwt-auth';
 
 @NgModule({
   imports: [
@@ -44,7 +46,7 @@ import { JwtAuthModule } from 'jwt-auth';
 export class AppModule {}
 ```
 
-2. Необходимо создать Api-сервис, реализуя базовый класс [BaseAuthApiService](../../lib/services/base-auth-http-service.ts). Данный класс обязует реализовать 3 метода `login`, `logout` и `refresh`. Методы `login` и `refresh` должны возвращать Observable cо значение `{ accessToken: string; refreshToken?: string; }`, если ваш сервер в методе авторизации `login` и\или в методе  обновления токена доступа `refresh` возвращает другой формат, то достаточно просто можно смаппить значение оператором `map` из rxjs в нужный формат. Пример такого сервиса:
+2. Необходимо создать Api-сервис, реализуя базовый класс [BaseAuthApiService](../../projects/ngx-jwt-auth/src/lib/services/base-auth-api-service.ts). Данный класс обязует реализовать 3 метода `login`, `logout` и `refresh`. Методы `login` и `refresh` должны возвращать Observable cо значение `{ accessToken: string; refreshToken?: string; }`, если ваш сервер в методе авторизации `login` и\или в методе  обновления токена доступа `refresh` возвращает другой формат, то достаточно просто можно смаппить значение оператором `map` из rxjs в нужный формат. Пример такого сервиса:
 
 ```typescript
 @Injectable({
@@ -98,7 +100,7 @@ import {
   JwtAuthModule,
   InMemoryTokenStorage,
   LocalStorageTokenStorage
-} from 'jwt-auth';
+} from '@dekh/ngx-jwt-auth';
 import { AuthApiService } from '../services';
 
 @NgModule({
@@ -114,7 +116,7 @@ import { AuthApiService } from '../services';
 export class AppModule {}
 ```
 
-4. Запровайдить Interceptor [JwtAuthInterceptor](../../lib/interceptors/jwt-auth.interceptor.ts).
+4. Запровайдить Interceptor [JwtAuthInterceptor](../../projects/ngx-jwt-auth/src/lib/interceptors/jwt-auth.interceptor.ts).
 
 > `JwtAuthInterceptor` реализует механизм обновления токена доступа путем проверки валидности токена и порога валидности `refreshTreshold` перед каждым запросом за исключением url запросов, которые указаны в параметре `unsecuredUrls`. Если токен не валиден, то будет произведена попытка обновления токена с последующим выполнением оригинального запроса, но если токен не сможет обновиться тогда пользователя разлогинет методом `logout` из `BaseAuthApiService`. 
 
@@ -128,7 +130,7 @@ import {
   InMemoryTokenStorage,
   LocalStorageTokenStorage,
   JwtAuthInterceptor
-} from 'jwt-auth';
+} from '@dekh/ngx-jwt-auth';
 import { AuthApiService } from '../services';
 
 @NgModule({
@@ -220,7 +222,7 @@ export class LoginComponent implements OnDestroy {
 ```typescript
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AuthGuard, UnAuthGuard } from 'jwt-auth';
+import { AuthGuard, UnAuthGuard } from '@dekh/ngx-jwt-auth';
 import { LoginComponent, RegistrationComponent } from '../auth';
 import { DashboardComponent } from '../dashboard';
 
@@ -301,11 +303,11 @@ export class AppRoutingModule {}
 
 ## Создание своего хранилища токенов
 
-Для того чтобы создать свое хранилище токенов достаточно реализовать базовый класс [BaseTokenStorage](../../lib/token-storages/base-token-storage.ts) и указать в параметре `customTokenStorages` модуля `JwtAuthModule.forRoot()` массив кастомных хранилище токенов. Пример:
+Для того чтобы создать свое хранилище токенов достаточно реализовать базовый класс [BaseTokenStorage](../../projects/ngx-jwt-auth/src/lib/token-storages/base-token-storage.ts) и указать в параметре `customTokenStorages` модуля `JwtAuthModule.forRoot()` массив кастомных хранилище токенов. Пример:
 
 ```typescript
 // my-custom-token-storage.ts
-import { BaseTokenStorage } from 'jwt-auth';
+import { BaseTokenStorage } from '@dekh/ngx-jwt-auth';
 
 export class MyCustomTokenStorage extends BaseTokenStorage {
   public get(key: string): string | null {
@@ -333,7 +335,7 @@ export class MyCustomTokenStorage extends BaseTokenStorage {
 
 ```typescript
 // app.module.ts
-import { JwtAuthModule } from 'jwt-auth';
+import { JwtAuthModule } from '@dekh/ngx-jwt-auth';
 import { MyCustomTokenStorage } from '../auth';
 
 @NgModule({
@@ -350,11 +352,22 @@ export class AppModule {}
 
 ```typescript
 // app.service.ts
-import { TokenStorageRegistry } from 'jwt-auth';
+import {
+  LocalStorageTokenStorage,
+  InMemoryTokenStorage,
+  TokenStorageRegistry
+} from '@dekh/ngx-jwt-auth';
+import { AuthApiService } from '../services';
 import { MyCustomTokenStorage } from '../auth';
 
-@Injactable({
-  provideIn: 'root'
+@NgModule({
+  imports: [
+    JwtAuthModule.forRoot({
+      authApiService: AuthApiService,
+      tokenStorage: LocalStorageTokenStorage,
+      authTokenStorage: InMemoryTokenStorage,
+    }),
+  ],
 })
 export class AppModule {
   constructor(private readonly _tokenStorageRegistry: TokenStorageRegistry) {
@@ -363,28 +376,26 @@ export class AppModule {
 }
 ```
 
-Исходный код `TokenStorageRegistry` [здесь](../../lib/services/token-storage-registry.service.ts).
-
 ## Смена хранилища токенов в рантайме
 
-В редких случаях может понадобится в рантайме изменить хранилище токенов, для этого существует два сервиса [TokenStorageManager](../../lib/services/token-storage-manager.service.ts) и [AuthTokenStorageManager](../../lib/services/auth-token-storage-manager.service.ts), оба этих сервиса имеют одинаковый интерфейс взаимодествия. `TokenStorageManager` используется для управление хранилищем __не авторизационных__ токенов, а `AuthTokenStorageManager` для управление хранилищем __авторизационных__ токенов. 
+В редких случаях может понадобится в рантайме изменить хранилище токенов, для этого существует два сервиса [TokenStorageManager](../../projects/ngx-jwt-auth/src/lib/services/token-storage-manager.service.ts) и [AuthTokenStorageManager](../../projects/ngx-jwt-auth/src/lib/services/auth-token-storage-manager.service.ts), оба этих сервиса имеют одинаковый интерфейс взаимодествия. `TokenStorageManager` используется для управление хранилищем __не авторизационных__ токенов, а `AuthTokenStorageManager` для управление хранилищем __авторизационных__ токенов. 
 
 Пример:
 
 ```typescript
-// app.service.ts
+// token-storage-changer.service.ts
 import {
   AuthTokenStorageManager,
   TokenStorageRegistry,
   CookiesTokenStorage,
   BaseTokenStorage,
-} from 'jwt-auth';
+} from '@dekh/ngx-jwt-auth';
 import { MyCustomTokenStorage } from '../auth';
 
-@Injactable({
-	provideIn: 'root'
+@Injectable({
+  provideIn: 'root'
 })
-export class AppModule {
+export class TokenStorageChangerService {
   constructor(
     private readonly _authTokenStorageManager: AuthTokenStorageManager,
     private readonly _tokenStorageRegistry: TokenStrageRegistry,
