@@ -1,6 +1,7 @@
 import { Inject, Injectable, Type } from '@angular/core';
+import { PREDEFINED_TOKEN_STORAGES } from '../const';
 import { JWT_AUTH_CONFIG } from '../injection-tokens';
-import { BaseTokenStorage, PREDEFINED_TOKEN_STORAGES } from '../token-storages';
+import { BaseTokenStorage } from '../token-storages';
 
 /**
  * Registry of available token storages.

@@ -1,2 +1,3 @@
-export * from './auth-token';
-export * from './samesite-option';
+export * from './auth-token.enum';
+export * from './samesite-option.enum';
+
