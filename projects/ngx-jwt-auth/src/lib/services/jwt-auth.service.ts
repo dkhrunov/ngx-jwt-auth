@@ -95,6 +95,8 @@ export class JwtAuthService implements IAuthApiService {
         this._isLoggedIn$.next(this._isValidAccessToken);
       }),
       catchError((error: HttpErrorResponse) => {
+        // FIXME если будет возвращаться другой ответ, например 200 код и сообщение об ошибке,
+        // то тут не отработает logout. Мб сделать через конфиг указывать данный код или что-то еще
         if (error.status === 401) {
           this.logout();
         }

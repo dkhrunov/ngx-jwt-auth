@@ -1,11 +1,12 @@
 # Ngx JWT Auth
+
+Библиотека для Token-Based Authentication на основе Access и Refresh токенов для Angular приложений.
+
+Эта библиотека настраивается для любых вариантов использования.
+
 <a href="https://jwt.io/">
   <img src="https://jwt.io/img/badge-compatible.svg">
 </a>
-
-Библиотека для Token-Based Authentication на основе Access и Refresh токенов.
-
-Эта библиотека настраивается для любых вариантов использования.
 
 ## Содержание
 - [Описание](#описание)
@@ -21,9 +22,9 @@
 Данная библиотека реализует управление аутентификацией на сайте. 
 
 Позволяет:
-- выбирать где будут храниться токены, выбирая хранилище токенов (подробнее далее);
-- изменять хранилища токенов прямо в рантайме (подробнее далее);
-- создать свое кастомное хранилище токенов (подробнее далее);
+- выбирать где будут храниться токены, выбирая хранилище токенов;
+- изменять хранилища токенов прямо в рантайме;
+- создать свое кастомное хранилище токенов;
 - автоматически обновлять токен доступа (access token). Обновление происходит либо по истечению срока валидности токена доступа, либо указать коэффициент протухания токена `refreshThreshold` по достижению которого будет выполнено обновление токена, для этих целей используется interceptor [JwtAuthInterceptor](../../projects/ngx-jwt-auth/src/lib/interceptors/jwt-auth.interceptor.ts).
 - ограничивать доступ на определенные роуты для не авторизованных пользователей, используя [AuthGuard](../../projects/ngx-jwt-auth/src/lib/guards/auth.guard.ts);
 - ограничивать доступ на определенные роуты для авторизованных пользователей, используя [UnAuthGuard](../../projects/ngx-jwt-auth/src/lib/guards/un-auth.guard.ts);
@@ -36,11 +37,12 @@
 1. Импортировать `JwtAuthModule` в root/core модуль вашего приложения с вызовом метода `forRoot`, и в данный метод передать параметры:
 
 ```typescript
+import { NgModule } from '@angular/core';
 import { JwtAuthModule } from '@dekh/ngx-jwt-auth';
 
 @NgModule({
   imports: [
-    JwtAuthModule.forRoot(options),
+    JwtAuthModule.forRoot({ ... }),
   ],
 })
 export class AppModule {}
@@ -49,6 +51,15 @@ export class AppModule {}
 2. Необходимо создать Api-сервис, реализуя базовый класс [BaseAuthApiService](../../projects/ngx-jwt-auth/src/lib/services/base-auth-api-service.ts). Данный класс обязует реализовать 3 метода `login`, `logout` и `refresh`. Методы `login` и `refresh` должны возвращать Observable cо значение `{ accessToken: string; refreshToken?: string; }`, если ваш сервер в методе авторизации `login` и\или в методе  обновления токена доступа `refresh` возвращает другой формат, то достаточно просто можно смаппить значение оператором `map` из rxjs в нужный формат. Пример такого сервиса:
 
 ```typescript
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BaseAuthApiService, AuthResponseTokens } from '@dekh/ngx-jwt-auth';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environments } from 'environment/environments';
+
+import { Login, Registration } from '../../models';
+
 @Injectable({
 	providedIn: 'root',
 })
@@ -93,15 +104,20 @@ export class AuthApiService extends BaseAuthApiService {
 }
 ```
 
-3. Далее нужно передать в параметры `JwtAuthModule.forRoot(options)` обязательные параметры:
+3. Далее нужно передать в параметры `JwtAuthModule.forRoot(options)` обязательные параметры: `authApiService`, `tokenStorage` и  `authTokenStorage`. 
+- `authApiService: Type<BaseAuthApiService>` - Класс реализующий BaseAuthApiService и выполняющий запросы к серверу.
+- `tokenStorage: Type<BaseTokenStorage>` - Хранилище обычных jwt токенов (не авторизационных).
+- `authTokenStorage: Type<BaseTokenStorage>` - Хранилище авторизационных токенов.
 
 ```typescript
+import { NgModule } from '@angular/core';
 import {
   JwtAuthModule,
   InMemoryTokenStorage,
   LocalStorageTokenStorage
 } from '@dekh/ngx-jwt-auth';
-import { AuthApiService } from '../services';
+
+import { AuthApiService } from './auth/services/auth-api.service';
 
 @NgModule({
   imports: [
@@ -125,13 +141,16 @@ export class AppModule {}
 Пример:
 
 ```typescript
+import { NgModule } from '@angular/core';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import {
   JwtAuthModule,
   InMemoryTokenStorage,
   LocalStorageTokenStorage,
   JwtAuthInterceptor
 } from '@dekh/ngx-jwt-auth';
-import { AuthApiService } from '../services';
+
+import { AuthApiService } from './auth/services/auth-api.service';
 
 @NgModule({
   imports: [
@@ -156,9 +175,17 @@ export class AppModule {}
 
 Например:
 
-На форме авторизации при ее отправки нужно использовать `JwtAuthService` и вызывать метод `login(...args[]: any)` все перданные аргументы в данный метод будут прокинуты в метод `login(...args[]: any)` нашего ранее созданного Api-сервиса для авторизации `AuthApiService` (все параметры прокидываются для каждого метода определенного в `BaseAuthApiService`):
+> На форме авторизации при ее отправки нужно использовать `JwtAuthService` и вызывать метод `login(...args[]: any)` все перданные аргументы в данный метод будут прокинуты в метод `login(...args[]: any)` нашего ранее созданного Api-сервиса для авторизации `AuthApiService` (все параметры прокидываются для каждого метода определенного в `BaseAuthApiService`):
 
 ```typescript
+import { Component, ChangeDetectionStrategy, OnDestroy } from "@angular/core";
+import { FormGroup, FormBuilder, Validators } from "@angular/forms";
+import { BehaviorSubject, Subject, tap, catchError, EMPTY, finalize } from "rxjs";
+import { JwtAuthService } from "./jwt-auth.service";
+
+import { Login, ServerErrorDto } from '../../models';
+import { HttpError } from '../../exceptions';
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -166,7 +193,7 @@ export class AppModule {}
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent implements OnDestroy {
-  public form: FormGroup;
+  public form!: FormGroup;
 
   private readonly _isLoading$ = new BehaviorSubject<boolean>(false);
   public readonly isLoading$ = this._isLoading$.asObservable();
@@ -194,7 +221,7 @@ export class LoginComponent implements OnDestroy {
     // Login class it`s Domain model
     const credentials = new Login(this.form.value);
 
-    this._authService
+    this._jwtAuthService
       .login(credentials)
       .pipe(
         tap(() => this._loginError$.next(null)),
@@ -223,6 +250,7 @@ export class LoginComponent implements OnDestroy {
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard, UnAuthGuard } from '@dekh/ngx-jwt-auth';
+
 import { LoginComponent, RegistrationComponent } from '../auth';
 import { DashboardComponent } from '../dashboard';
 
@@ -335,12 +363,23 @@ export class MyCustomTokenStorage extends BaseTokenStorage {
 
 ```typescript
 // app.module.ts
-import { JwtAuthModule } from '@dekh/ngx-jwt-auth';
-import { MyCustomTokenStorage } from '../auth';
+import { NgModule } from '@angular/core';
+import {
+  JwtAuthModule,
+  LocalStorageTokenStorage,
+  InMemoryTokenStorage
+} from '@dekh/ngx-jwt-auth';
+
+import { AuthApiService } from './auth/services/auth-api.service';
+import { MyCustomTokenStorage } from './auth/token-storage/my-custom-token-storage';
 
 @NgModule({
   imports: [
+    AppRoutingModule,
     JwtAuthModule.forRoot({
+      authApiService: AuthApiService,
+      tokenStorage: LocalStorageTokenStorage,
+      authTokenStorage: MyCustomTokenStorage,
       customTokenStorages: [new MyCustomTokenStorage()],
     }),
   ],
@@ -352,20 +391,23 @@ export class AppModule {}
 
 ```typescript
 // app.service.ts
+import { NgModule } from '@angular/core';
 import {
+  JwtAuthModule,
   LocalStorageTokenStorage,
   InMemoryTokenStorage,
   TokenStorageRegistry
 } from '@dekh/ngx-jwt-auth';
-import { AuthApiService } from '../services';
-import { MyCustomTokenStorage } from '../auth';
+
+import { AuthApiService } from './auth/services/auth-api.service';
+import { MyCustomTokenStorage } from './auth/token-storage/my-custom-token-storage';
 
 @NgModule({
   imports: [
     JwtAuthModule.forRoot({
       authApiService: AuthApiService,
       tokenStorage: LocalStorageTokenStorage,
-      authTokenStorage: InMemoryTokenStorage,
+      authTokenStorage: MyCustomTokenStorage,
     }),
   ],
 })
@@ -384,13 +426,15 @@ export class AppModule {
 
 ```typescript
 // token-storage-changer.service.ts
+import { Injectable } from '@angular/core';
 import {
   AuthTokenStorageManager,
   TokenStorageRegistry,
   CookiesTokenStorage,
   BaseTokenStorage,
 } from '@dekh/ngx-jwt-auth';
-import { MyCustomTokenStorage } from '../auth';
+
+import { MyCustomTokenStorage } from './auth/token-storage/my-custom-token-storage';
 
 @Injectable({
   provideIn: 'root'
@@ -398,7 +442,7 @@ import { MyCustomTokenStorage } from '../auth';
 export class TokenStorageChangerService {
   constructor(
     private readonly _authTokenStorageManager: AuthTokenStorageManager,
-    private readonly _tokenStorageRegistry: TokenStrageRegistry,
+    private readonly _tokenStorageRegistry: TokenStorageRegistry,
   ) {
     this._tokenStorageRegistry.register(new MyCustomTokenStorage());
   }
@@ -422,7 +466,7 @@ export class TokenStorageChangerService {
     // const cookiesStorage = this._tokenStorageRegistry.get(new CookiesTokenStorage());
     // or
     // const cookiesStorage = this._tokenStorageRegistry.get('CookiesTokenStorage');
-    this.changeAuthStorage(storage);
+    this.changeAuthStorage(cookiesStorage);
   }
 
   public changeAuthStorage(storage: BaseTokenStorage): void {
@@ -437,4 +481,4 @@ export class TokenStorageChangerService {
 
   Причинной данной обишбки - цикличный вызов `JwtAuthInterceptor`. Так как interceptor обработавыает каждый запрос, за исключением тех зопросов url которые указаны в параметре конфига `unsecuredUrls`, запрос на обновление токена создает цикличную зависимость.
 
-  Решением данной проблемы является указать в массиве `unsecuredUrls` URL или path запроса на обновление accessToken'а, либо указать корневой path для всех запросов связанных с авторизацией/регистрацией пользователя, например: `"/auth/"`, тогда все запросы c path auth будут исключены из проверки interceptor'a - `server.api/auth/login`, `server.api/auth/register`, `server.api/auth/refresh` и подобные.
+  Решением данной проблемы является указать в массиве `unsecuredUrls` URL или path запроса на обновление accessToken'а, либо указать корневой path для всех запросов связанных с авторизацией/регистрацией пользователя, например: `"/auth/"`, тогда все запросы с path `auth` будут исключены из проверки interceptor'a - `server.api/auth/login`, `server.api/auth/register`, `server.api/auth/refresh` и подобные.

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { CanActivate, CanLoad, Router, UrlTree } from '@angular/router';
+import { CanActivate, CanActivateChild, CanLoad, Router, UrlTree } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { JWT_AUTH_CONFIG } from '../injection-tokens';
@@ -12,7 +12,7 @@ import { JwtAuthService } from '../services';
 @Injectable({
   providedIn: 'root',
 })
-export class AuthGuard implements CanLoad, CanActivate {
+export class AuthGuard implements CanLoad, CanActivate, CanActivateChild {
   constructor(
     private readonly _router: Router,
     private readonly _jwtAuthService: JwtAuthService,
@@ -20,22 +20,26 @@ export class AuthGuard implements CanLoad, CanActivate {
   ) {}
 
   public canLoad(): Observable<boolean | UrlTree> {
-    return this._guarantee();
+    return this._check();
   }
 
   public canActivate(): Observable<boolean | UrlTree> {
-    return this._guarantee();
+    return this._check();
   }
 
-  private _guarantee(): Observable<boolean | UrlTree> {
+  public canActivateChild(): Observable<boolean | UrlTree> {
+    return this._check();
+  }
+
+  private _check(): Observable<boolean | UrlTree> {
     return this._jwtAuthService.isLoggedIn$.pipe(
       take(1),
-      map((x) => {
-        if (this._config.authGuardRedirectUrl !== undefined && !x) {
+      map((isLoggedIn) => {
+        if (this._config.authGuardRedirectUrl !== undefined && !isLoggedIn) {
           return this._router.createUrlTree([this._config.authGuardRedirectUrl]);
         }
 
-        return x;
+        return isLoggedIn;
       })
     );
   }

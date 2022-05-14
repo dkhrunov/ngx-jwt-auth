@@ -1,7 +1,9 @@
 import { Injector, ModuleWithProviders, NgModule } from '@angular/core';
 import {
   AUTH_API_SERVICE,
-  AUTH_TOKEN_STORAGE, JWT_AUTH_CONFIG, TOKEN_STORAGE
+  AUTH_TOKEN_STORAGE,
+  JWT_AUTH_CONFIG,
+  TOKEN_STORAGE
 } from './injection-tokens';
 import { JwtAuthConfig } from './jwt-auth-config';
 

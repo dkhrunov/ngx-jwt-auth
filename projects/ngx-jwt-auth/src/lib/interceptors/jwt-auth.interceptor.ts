@@ -47,9 +47,9 @@ export class JwtAuthInterceptor implements HttpInterceptor {
     }
 
     const accessToken = this._authTokenManager.getAccessToken();
-    const isShouldBeRefreshed = accessToken && this._config.refreshThreshold && isReachedRefreshThreshold(accessToken, this._config.refreshThreshold);
+    const _isReachedRefreshThreshold = accessToken && this._config.refreshThreshold && isReachedRefreshThreshold(accessToken, this._config.refreshThreshold);
 
-    if (!this._authTokenManager.isValidAccessToken() || isShouldBeRefreshed) {
+    if (!this._authTokenManager.isValidAccessToken() || _isReachedRefreshThreshold) {
       return this._refreshToken().pipe(
         switchMap(() => {
           const requestWithToken = this._requestWithAccessToken(request);
