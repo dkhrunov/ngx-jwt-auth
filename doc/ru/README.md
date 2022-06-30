@@ -8,6 +8,11 @@
   <img src="https://jwt.io/img/badge-compatible.svg">
 </a>
 
+## Соответствие версий
+Angular version | 13 |
+--- | --- |
+ngx-jwt-auth version | 1 |
+
 ## Содержание
 - [Описание](#описание)
 - [Настройка и применение](#настройка-и-применение)
@@ -104,10 +109,11 @@ export class AuthApiService extends BaseAuthApiService {
 }
 ```
 
-3. Далее нужно передать в параметры `JwtAuthModule.forRoot(options)` обязательные параметры: `authApiService`, `tokenStorage` и  `authTokenStorage`. 
+3. Далее нужно передать в параметры `JwtAuthModule.forRoot(options)` обязательные параметры: `authApiService`, `tokenStorage`, `authTokenStorage` и `unsecuredUrls`. 
 - `authApiService: Type<BaseAuthApiService>` - Класс реализующий BaseAuthApiService и выполняющий запросы к серверу.
 - `tokenStorage: Type<BaseTokenStorage>` - Хранилище обычных jwt токенов (не авторизационных).
 - `authTokenStorage: Type<BaseTokenStorage>` - Хранилище авторизационных токенов.
+- `unsecuredUrls: string[]` - Массив urls и/или endpoints на которых не требуется авторизация, необходимо обязательно указать endpoint на авторизацию и обновление access токена. Подробнее о `unsecuredUrls` можно почитать [тут](#описание-всех-параметров-библиотеки)
 
 ```typescript
 import { NgModule } from '@angular/core';
@@ -126,6 +132,7 @@ import { AuthApiService } from './auth/services/auth-api.service';
       authApiService: AuthApiService,
       tokenStorage: LocalStorageTokenStorage,
       authTokenStorage: InMemoryTokenStorage,
+      unsecuredUrls: ['api/auth/login', 'api/auth/refresh'],
     }),
   ],
 })
@@ -307,7 +314,7 @@ export class AppRoutingModule {}
   > **Важно:** всегда указывайте URL для обновления токена, иначе будет циркулярная зависимость:
   >> ERROR Error: NG0200: Circular dependency in DI detected for JwtAuthService.
   >
-  > Это происходит потому что `HttpClient` зависит от `Interceptor (JwtAuthInterceptor)` зависит от `AuthApiService` зависит от `HttpClient`.
+  > Это происходит потому что `HttpClient` зависит от -> `Interceptor (JwtAuthInterceptor)` зависит от -> `AuthApiService` зависит от -> `HttpClient`.
   > 
   > [Способ исправления данной ошибки здесь.](#troubleshooting)
 
@@ -479,6 +486,6 @@ export class TokenStorageChangerService {
 
 - При старте приложения выдает ошибку __"ERROR Error: NG0200: Circular dependency in DI detected for JwtAuthService."__
 
-  Причинной данной обишбки - цикличный вызов `JwtAuthInterceptor`. Так как interceptor обработавыает каждый запрос, за исключением тех зопросов url которые указаны в параметре конфига `unsecuredUrls`, запрос на обновление токена создает цикличную зависимость.
+  Причинной данной обишбки - цикличный вызов `JwtAuthInterceptor`. Так как interceptor обработавыает каждый запрос, за исключением тех зопросов url которых указаны в параметре конфига `unsecuredUrls`, запрос на обновление токена создает цикличную зависимость.
 
   Решением данной проблемы является указать в массиве `unsecuredUrls` URL или path запроса на обновление accessToken'а, либо указать корневой path для всех запросов связанных с авторизацией/регистрацией пользователя, например: `"/auth/"`, тогда все запросы с path `auth` будут исключены из проверки interceptor'a - `server.api/auth/login`, `server.api/auth/register`, `server.api/auth/refresh` и подобные.

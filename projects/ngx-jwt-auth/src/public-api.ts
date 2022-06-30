@@ -12,4 +12,4 @@ export * from './lib/jwt-auth-config';
 export * from './lib/jwt-auth.module';
 export * from './lib/services';
 export * from './lib/token-storages';
-
+export { JwtDecoder } from './lib/helpers'

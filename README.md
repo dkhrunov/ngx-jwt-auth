@@ -9,7 +9,12 @@ This library is configurable for any use cases.
 </a>
 
 ## Other languages
-- [Russian](../../doc/ru/README.md)
+- [Russian](./doc/ru/README.md)
+
+## Version Compliance
+Angular version | 13 |
+--- | --- |
+ngx-jwt-auth version | 1 |
 
 ## Content
 - [Description](#description)
@@ -28,13 +33,13 @@ Features:
 - choose where tokens will be stored by choosing a token storage;
 - change the storage of tokens directly in runtime;
 - create your own custom storage of tokens;
-- automatically refresh the access token. Refresh occurs either after the validity period of the access token expires, or specify the `refreshThreshold` token decay coefficient, upon reaching which the token will be updated, for these purposes the interceptor [JwtAuthInterceptor](./src/lib/interceptors/jwt-auth.interceptor.ts) is used.
-- restrict access to certain routes for unauthorized users using [AuthGuard](./src/lib/guards/auth.guard.ts);
-- restrict access to certain routes for authorized users using [UnAuthGuard](./src/lib/guards/un-auth.guard.ts);
-- subscribe to the `isLoggedIn$` stream, which stores the current user authentication status [JwtAuthService](./src/lib/services/jwt-auth.service.ts);
-- manage tokens yourself (get, delete, save a token) through the service [AuthTokenManager](./src/lib/services/auth-token-manager.service.ts);
-- manage not only authorization tokens, but any other JWT tokens for these purposes, there are separate settings in `JwtAuthModule`, a separate token storage (you can use the same predefined storages, or create your own), a separate service for working with tokens [TokenManager] (. /src/lib/services/token-manager.service.ts) and a separate service for managing token storage [TokenStorageManager](./src/lib/services/token-storage-manager.service.ts).
-- extend the basic features by creating custom token stores, custom token management solutions (extend [BaseTokenManager](./src/lib/services/base-token-manager.ts)) and token stores (extend [BaseTokenStorageManager](./src /lib/services/base-token-storage-manager.ts)).
+- automatically refresh the access token. Refresh occurs either after the validity period of the access token expires, or specify the `refreshThreshold` token decay coefficient, upon reaching which the token will be updated, for these purposes the interceptor [JwtAuthInterceptor](./projects/ngx-jwt-auth/src/lib/interceptors/jwt-auth.interceptor.ts) is used.
+- restrict access to certain routes for unauthorized users using [AuthGuard](./projects/ngx-jwt-auth/src/lib/guards/auth.guard.ts);
+- restrict access to certain routes for authorized users using [UnAuthGuard](./projects/ngx-jwt-auth/src/lib/guards/un-auth.guard.ts);
+- subscribe to the `isLoggedIn$` stream, which stores the current user authentication status [JwtAuthService](./projects/ngx-jwt-auth/src/lib/services/jwt-auth.service.ts);
+- manage tokens yourself (get, delete, save a token) through the service [AuthTokenManager](./projects/ngx-jwt-auth/src/lib/services/auth-token-manager.service.ts);
+- manage not only authorization tokens, but any other JWT tokens for these purposes, there are separate settings in `JwtAuthModule`, a separate token storage (you can use the same predefined storages, or create your own), a separate service for working with tokens [TokenManager] (. /src/lib/services/token-manager.service.ts) and a separate service for managing token storage [TokenStorageManager](./projects/ngx-jwt-auth/src/lib/services/token-storage-manager.service.ts).
+- extend the basic features by creating custom token stores, custom token management solutions (extend [BaseTokenManager](./projects/ngx-jwt-auth/src/lib/services/base-token-manager.ts)) and token stores (extend [BaseTokenStorageManager](./projects/ngx-jwt-auth/src /lib/services/base-token-storage-manager.ts)).
 
 ## Setup and use
 1. Import `JwtAuthModule` into the App/Core module of your application with a call to the `forRoot` method, and pass parameters to this method:
@@ -51,7 +56,7 @@ import { JwtAuthModule } from '@dekh/ngx-jwt-auth';
 export class AppModule {}
 ```
 
-2. Next, you must to create an Api-service by implementing the [BaseAuthApiService](./src/lib/services/base-auth-api-service.ts) base class. This class obliges to implement 3 methods `login`, `logout` and `refresh`. The `login` and `refresh` methods must return an Observable with the value `{ accessToken: string; refreshToken?: string; }`, if your server in the `login` authorization method and\or in the `refresh` access token refresh method returns a different format, then it is quite easy to map the value with the `map` operator from rxjs to the desired format. An example of such a service:
+2. Next, you must to create an Api-service by implementing the [BaseAuthApiService](./projects/ngx-jwt-auth/src/lib/services/base-auth-api-service.ts) base class. This class obliges to implement 3 methods `login`, `logout` and `refresh`. The `login` and `refresh` methods must return an Observable with the value `{ accessToken: string; refreshToken?: string; }`, if your server in the `login` authorization method and\or in the `refresh` access token refresh method returns a different format, then it is quite easy to map the value with the `map` operator from rxjs to the desired format. An example of such a service:
 
 ```typescript
 import { Injectable } from '@angular/core';
@@ -106,10 +111,11 @@ export class AuthApiService extends BaseAuthApiService {
 }
 ```
 
-3. Next, you need to pass the required parameters to the `JwtAuthModule.forRoot(options)` parameters: `authApiService`, `tokenStorage` and  `authTokenStorage`. 
+3. Next, you need to pass the required parameters to the `JwtAuthModule.forRoot(options)` parameters: `authApiService`, `tokenStorage`, `authTokenStorage` and `unsecuredUrls`. 
 - `authApiService: Type<BaseAuthApiService>` - A class that implements `BaseAuthApiService` and makes requests to the server.
 - `tokenStorage: Type<BaseTokenStorage>` - Storage of regular tokens (not authorization ones).
 - `authTokenStorage: Type<BaseTokenStorage>` - Storage of authorization tokens.
+- `unsecuredUrls: string[]` - Array of urls and/or endpoints that no need authorization, you must specify the endpoint of the login method and token refresh method. More about `unsecuredUrls` [here](#description-of-all-library-parameters)
 
 ```typescript
 import { NgModule } from '@angular/core';
@@ -128,13 +134,14 @@ import { AuthApiService } from './auth/services/auth-api.service';
       authApiService: AuthApiService,
       tokenStorage: LocalStorageTokenStorage,
       authTokenStorage: InMemoryTokenStorage,
+      unsecuredUrls: ['api/auth/login', 'api/auth/refresh']
     }),
   ],
 })
 export class AppModule {}
 ```
 
-4. Provide Interceptor [JwtAuthInterceptor](./src/lib/interceptors/jwt-auth.interceptor.ts).
+4. Provide Interceptor [JwtAuthInterceptor](./projects/ngx-jwt-auth/src/lib/interceptors/jwt-auth.interceptor.ts).
 
 > `JwtAuthInterceptor` implements an access token refresh mechanism by checking the validity of the token and the `refreshTreshold` validity threshold before each request, except for requests whose URL is specified in the `unsecuredUrls` parameter. If the token is not valid, then an attempt will be made to refresh the token followed by the original request, but if the token cannot be refreshed, then the user will be logged out using the `logout` method from `BaseAuthApiService`. 
 
@@ -333,7 +340,7 @@ export class AppRoutingModule {}
 
 ## Creating your own Token Storage
 
-In order to create your own token storage, it is enough to implement the [BaseTokenStorage](./src/lib/token-storages/base-token-storage.ts) base class and specify an array of custom storage of tokens. Example:
+In order to create your own token storage, it is enough to implement the [BaseTokenStorage](./projects/ngx-jwt-auth/src/lib/token-storages/base-token-storage.ts) base class and specify an array of custom storage of tokens. Example:
 
 ```typescript
 // my-custom-token-storage.ts
@@ -422,7 +429,7 @@ export class AppModule {
 
 ## Changing token storage at runtime
 
-In rare cases, you may need to change the token storage at runtime, for this there are two services [TokenStorageManager](./src/lib/services/token-storage-manager.service.ts) and [AuthTokenStorageManager](./src/lib/services /auth-token-storage-manager.service.ts), both of these services implements the same interface. `TokenStorageManager` is used to manage the storage of __simple/non-authorization__ tokens, and `AuthTokenStorageManager` is used to manage the storage of __authorization__ tokens.
+In rare cases, you may need to change the token storage at runtime, for this there are two services [TokenStorageManager](./projects/ngx-jwt-auth/src/lib/services/token-storage-manager.service.ts) and [AuthTokenStorageManager](./projects/ngx-jwt-auth/src/lib/services /auth-token-storage-manager.service.ts), both of these services implements the same interface. `TokenStorageManager` is used to manage the storage of __simple/non-authorization__ tokens, and `AuthTokenStorageManager` is used to manage the storage of __authorization__ tokens.
 
 Пример:
 
