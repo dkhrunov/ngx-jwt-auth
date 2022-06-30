@@ -11,6 +11,11 @@ This library is configurable for any use cases.
 ## Other languages
 - [Russian](../../doc/ru/README.md)
 
+## Version Compliance
+Angular version | 13 |
+--- | --- |
+ngx-jwt-auth version | 1 |
+
 ## Content
 - [Description](#description)
 - [Setup and use](#setup-and-use)
@@ -106,10 +111,11 @@ export class AuthApiService extends BaseAuthApiService {
 }
 ```
 
-3. Next, you need to pass the required parameters to the `JwtAuthModule.forRoot(options)` parameters: `authApiService`, `tokenStorage` and  `authTokenStorage`. 
+3. Next, you need to pass the required parameters to the `JwtAuthModule.forRoot(options)` parameters: `authApiService`, `tokenStorage`, `authTokenStorage` and `unsecuredUrls`. 
 - `authApiService: Type<BaseAuthApiService>` - A class that implements `BaseAuthApiService` and makes requests to the server.
 - `tokenStorage: Type<BaseTokenStorage>` - Storage of regular tokens (not authorization ones).
 - `authTokenStorage: Type<BaseTokenStorage>` - Storage of authorization tokens.
+- `unsecuredUrls: string[]` - Array of urls and/or endpoints that no need authorization, you must specify the endpoint of the login method and token refresh method. More about `unsecuredUrls` [here](#description-of-all-library-parameters)
 
 ```typescript
 import { NgModule } from '@angular/core';
@@ -128,6 +134,7 @@ import { AuthApiService } from './auth/services/auth-api.service';
       authApiService: AuthApiService,
       tokenStorage: LocalStorageTokenStorage,
       authTokenStorage: InMemoryTokenStorage,
+      unsecuredUrls: ['api/auth/login', 'api/auth/refresh']
     }),
   ],
 })
