@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
+import { inject, Injectable } from '@angular/core';
 
 import { LAST_PATH_KEY } from '../const/last-path-key';
+import { LOCAL_STORAGE } from '../injection-tokens';
 import { BaseLastPageWatcher } from './base-last-page-watcher';
 
 /**
@@ -16,18 +16,18 @@ import { BaseLastPageWatcher } from './base-last-page-watcher';
  */
 @Injectable()
 export class LastPageWatcher extends BaseLastPageWatcher {
+  private readonly _localStorage = inject(LOCAL_STORAGE);
 
-  // TODO use inject in v14
-  constructor(private readonly router: Router) { 
-    super(router);
+  constructor() { 
+    super();
     this.watch();
   }
 
   public savePath(route: string): void {
-    localStorage.setItem(LAST_PATH_KEY, route);
+    this._localStorage.setItem(LAST_PATH_KEY, route);
   }
   
   public getPath(): string | null {
-    return localStorage.getItem(LAST_PATH_KEY);
+    return this._localStorage.getItem(LAST_PATH_KEY);
   }
 }

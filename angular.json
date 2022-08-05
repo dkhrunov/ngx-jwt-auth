@@ -35,5 +35,7 @@
       }
     }
   },
-  "defaultProject": "ngx-jwt-auth"
+  "cli": {
+    "analytics": false
+  }
 }
