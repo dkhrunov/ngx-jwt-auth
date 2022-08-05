@@ -1,7 +1,6 @@
 import { Inject, Injectable, Type } from '@angular/core';
-import { PREDEFINED_TOKEN_STORAGES } from '../const';
 import { JWT_AUTH_CONFIG } from '../injection-tokens';
-import { BaseTokenStorage } from '../token-storages';
+import { BaseTokenStorage, CookiesTokenStorage, InMemoryTokenStorage, LocalStorageTokenStorage, SessionStorageTokenStorage } from '../token-storages';
 
 /**
  * Registry of available token storages.
@@ -12,11 +11,18 @@ import { BaseTokenStorage } from '../token-storages';
 export class TokenStorageRegistry {
   private readonly _map = new Map<string, BaseTokenStorage>();
 
+  private readonly PREDEFINED_TOKEN_STORAGES = [
+    new CookiesTokenStorage(),
+    new LocalStorageTokenStorage(),
+    new SessionStorageTokenStorage(),
+    new InMemoryTokenStorage(),
+  ];
+
   constructor(@Inject(JWT_AUTH_CONFIG) private readonly _config: any) {
     // registers predefined token storages and user-provided token storages
-    PREDEFINED_TOKEN_STORAGES.concat(this._config.customTokenStorages).forEach((storage) =>
-      this.register(storage)
-    );
+    this.PREDEFINED_TOKEN_STORAGES
+      .concat(this._config.customTokenStorages)
+      .forEach((storage) => this.register(storage));
   }
 
   /**

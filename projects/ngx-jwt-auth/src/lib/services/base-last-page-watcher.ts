@@ -1,3 +1,4 @@
+import { inject } from '@angular/core';
 import { Injectable, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { merge, Subject } from 'rxjs';
@@ -5,12 +6,9 @@ import { filter, pairwise, takeUntil } from 'rxjs/operators';
 
 @Injectable()
 export abstract class BaseLastPageWatcher implements OnDestroy {
+  protected readonly _router = inject(Router);
   protected readonly _stop$ = new Subject<void>();
   protected readonly _destroy$ = new Subject<void>();
-
-  // TODO use inject in v14
-  constructor(private readonly _router: Router) { 
-  }
 
   public ngOnDestroy(): void {
     this._destroy$.next();
