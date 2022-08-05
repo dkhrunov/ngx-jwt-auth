@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, Optional } from '@angular/core';
+import { Router } from '@angular/router';
 import { Observable, ReplaySubject, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { AUTH_API_SERVICE, JWT_AUTH_CONFIG } from '../injection-tokens';
@@ -7,6 +8,7 @@ import { AuthResponseTokens, IAuthApiService } from '../interfaces';
 import { JwtAuthConfig } from '../jwt-auth-config';
 import { AuthTokenManager } from './auth-token-manager.service';
 import { BaseAuthApiService } from './base-auth-api-service';
+import { LastPageWatcher } from './last-page-watcher.service';
 
 /**
  * A wrapper class (proxy) that implements the `IAuthApiService` interface.
@@ -28,9 +30,11 @@ export class JwtAuthService implements IAuthApiService {
   }
 
   constructor(
+    private readonly _router: Router,
     private readonly _authTokenManager: AuthTokenManager,
     @Inject(AUTH_API_SERVICE) private readonly _authApiService: BaseAuthApiService,
-    @Inject(JWT_AUTH_CONFIG) private readonly _config: JwtAuthConfig
+    @Inject(JWT_AUTH_CONFIG) private readonly _config: JwtAuthConfig,
+    @Optional() private readonly _lastPageWatcher: LastPageWatcher | null,
   ) {
     if (this._isValidAccessToken) {
       this._isLoggedIn$.next(true);
@@ -53,6 +57,12 @@ export class JwtAuthService implements IAuthApiService {
 
         this._authTokenManager.setAccessToken(authTokens.accessToken);
         this._isLoggedIn$.next(this._isValidAccessToken);
+      }),
+      tap(() => {
+        if (this._config.redirectToLastPage) {
+          const url = this._lastPageWatcher?.getPath();
+          this._router.navigateByUrl(url ?? this._config.unAuthGuardRedirectUrl ?? '');
+        }
       }),
       catchError((error) => {
         this._isLoggedIn$.next(false);

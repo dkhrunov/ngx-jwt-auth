@@ -12,9 +12,9 @@ This library is configurable for any use cases.
 - [Russian](../../doc/ru/README.md)
 
 ## Version Compliance
-Angular version | 13 |
---- | --- |
-ngx-jwt-auth version | 1 |
+Angular version | 13 | 14 |
+--- | --- | ---|
+ngx-jwt-auth version | 1 | 2 |
 
 ## Content
 - [Description](#description)
@@ -23,6 +23,7 @@ ngx-jwt-auth version | 1 |
 - [List of predefined Token Storages](#list-of-predefined-token-storages)
 - [Creating your own Token Storage](#creating-your-own-token-storage)
 - [Changing token storage at runtime](#changing-token-storage-at-runtime)
+- [Creating your own LastPageWatcher](#creating-your-own-lastpagewatcher)
 - [Troubleshooting](#troubleshooting)
 
 ## Description
@@ -331,6 +332,9 @@ export class AppRoutingModule {}
 
 - `authGuardRedirectUrl?: string` - The URL where an unauthorized user will be redirected to if they try to access a route protected by AuthGuard. If not set, then routes protected by AuthGuard will simply reject the transition to this route.
 
+- `redirectToLastPage?: boolean | Type<BaseLastPageWatcher>` - Redirects the user to the last visited page after authorization. By default `false`.
+  > If you set the value of `Type<BaseLastPageWatcher>` then your provider will be used. On the other hand, if you set it to `true`, the default `LastPageWatcher` will be used.
+
 ## List of predefined Token Storages
 
 - `CookiesTokenStorage` - abstraction over cookies, saves tokens in cookies;
@@ -483,6 +487,35 @@ export class TokenStorageChangerService {
   }
 }
 ```
+
+## Creating your own LastPageWatcher
+
+1. Create a custom service to track page changes:
+  ```typescript
+  @Injectable()
+  export class CustomLastPageWatcher extends BaseLastPageWatcher {
+
+    constructor() { 
+      this.watch();
+    }
+
+    public savePath(path: string): void {
+      // logic to save path, e.g send to server to save it in DB
+    }
+    
+    public getPath(): string | null {
+      // logic to get path, e.g from server
+    }
+  }
+  ```
+
+2. Specify your class in the settings:
+  ```typescript
+  JwtAuthModule.forRoot({
+    [...],
+    redirectToLastPage: CustomLastPageWatcher
+  })
+  ```
 
 ## Troubleshooting
 
