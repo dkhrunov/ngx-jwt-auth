@@ -7,4 +7,5 @@ export * from './jwt-auth.service';
 export * from './token-manager.service';
 export * from './token-storage-manager.service';
 export * from './token-storage-registry.service';
-
+export * from './base-last-page-watcher';
+export * from './last-page-watcher.service';

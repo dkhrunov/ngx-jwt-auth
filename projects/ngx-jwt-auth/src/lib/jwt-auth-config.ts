@@ -1,5 +1,5 @@
 import { Type } from "@angular/core";
-import { BaseAuthApiService } from "./services";
+import { BaseAuthApiService, BaseLastPageWatcher } from "./services";
 import { BaseTokenStorage } from "./token-storages";
 
 export class JwtAuthConfig {
@@ -93,6 +93,15 @@ export class JwtAuthConfig {
    * If not set, then routes protected by AuthGuard will simply reject the transition to this route.
    */
   public authGuardRedirectUrl?: string = undefined;
+  /**
+   * Redirects the user to the last visited page after authorization.
+   * 
+   * ---------
+   * If you set the value of `Type<BaseLastPageWatcher>`, then your provider will be used.
+   * On the other hand, if you set it to `true`, the default `LastPageWatcher` will be used.
+   * By default `false`.
+   */
+  public readonly redirectToLastPage?: boolean | Type<BaseLastPageWatcher> = false;
 
   constructor(params: JwtAuthConfig) {
     for (const key in params) {

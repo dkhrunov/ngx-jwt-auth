@@ -1,3 +1,5 @@
+import { inject } from '@angular/core';
+import { LOCAL_STORAGE } from '../injection-tokens';
 import { BaseTokenStorage } from '../token-storages';
 import { TokenStorageRegistry } from './token-storage-registry.service';
 
@@ -5,6 +7,7 @@ import { TokenStorageRegistry } from './token-storage-registry.service';
  * Base class for TokenStorageManager.
  */
 export abstract class BaseTokenStorageManager {
+  private readonly _localStorage = inject(LOCAL_STORAGE);
   private _storage: BaseTokenStorage;
 
   /**
@@ -33,11 +36,11 @@ export abstract class BaseTokenStorageManager {
   }
 
   private _hydrate(storage: BaseTokenStorage): void {
-    localStorage.setItem(this._key, JSON.stringify(storage.constructor.name));
+    this._localStorage.setItem(this._key, JSON.stringify(storage.constructor.name));
   }
 
   private _rehydrate(): BaseTokenStorage {
-    const tokenStorageName = localStorage.getItem(this._key);
+    const tokenStorageName = this._localStorage.getItem(this._key);
 
     if (!tokenStorageName) {
       this._hydrate(this._tokenStorage);

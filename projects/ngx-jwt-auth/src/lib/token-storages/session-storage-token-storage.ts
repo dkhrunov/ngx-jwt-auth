@@ -1,18 +1,22 @@
+import { inject } from '@angular/core';
+import { SESSION_STORAGE } from '../injection-tokens';
 import { BaseTokenStorage } from './base-token-storage';
 
 /**
  * Manage tokens in the SessionStorage.
  */
 export class SessionStorageTokenStorage extends BaseTokenStorage {
+  private readonly _sessionStorage = inject(SESSION_STORAGE);
+
   public get(key: string): string | null {
-    return sessionStorage.getItem(key);
+    return this._sessionStorage.getItem(key);
   }
 
   public set(key: string, token: string): void {
-    sessionStorage.setItem(key, token);
+    this._sessionStorage.setItem(key, token);
   }
 
   public delete(key: string): void {
-    sessionStorage.removeItem(key);
+    this._sessionStorage.removeItem(key);
   }
 }

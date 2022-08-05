@@ -9,9 +9,9 @@
 </a>
 
 ## Соответствие версий
-Angular version | 13 |
---- | --- |
-ngx-jwt-auth version | 1 |
+Angular version | 13 | 14 |
+--- | --- | ---|
+ngx-jwt-auth version | 1 | 2 |
 
 ## Содержание
 - [Описание](#описание)
@@ -20,6 +20,7 @@ ngx-jwt-auth version | 1 |
 - [Список предопределенных хранилищ токенов](#список-предопределенных-хранилищ-токенов)
 - [Создание своего хранилища токенов](#создание-своего-хранилища-токенов)
 - [Смена хранилища токенов в рантайме](#смена-хранилища-токенов-в-рантайме)
+- [Реализация кастомной стратегии сохранения последней посещенной страницы](#реализация-кастомной-стратегии-сохранения-последней-посещенной-страницы)
 - [Troubleshooting](#troubleshooting)
 
 ## Описание
@@ -329,6 +330,9 @@ export class AppRoutingModule {}
 
 - `authGuardRedirectUrl?: string` - URL куда будет редиректить не авторизованного пользователя, если он попробует зайти на route защищенный AuthGuard. Если не задать значение, то route защищенный AuthGuard будут просто отклонять переход на данный route.
 
+- `redirectToLastPage?: boolean | Type<BaseLastPageWatcher>` - Перенаправляет пользователя на последнюю посещенную страницу после авторизации. By default `false`.
+  > Если вы установите значение `Type<BaseLastPageWatcher>`, тогда будет использоваться ваш провайдер. С другой стороны, если вы установите значение `true`, тогда будет использоваться стандартный `LastPageWatcher`.
+
 ## Список предопределенных хранилищ токенов
 
 - `CookiesTokenStorage` - абстракция над cookies, сохраняет токены в cookies;
@@ -481,6 +485,35 @@ export class TokenStorageChangerService {
   }
 }
 ```
+
+## Реализация кастомной стратегии сохранения последней посещенной страницы
+
+1. Создать кастомный сервис для отслеживания изменения страниц:
+  ```typescript
+  @Injectable()
+  export class CustomLastPageWatcher extends BaseLastPageWatcher {
+
+    constructor() { 
+      this.watch();
+    }
+
+    public savePath(path: string): void {
+      // logic to save path, e.g send to server to save it in DB
+    }
+    
+    public getPath(): string | null {
+      // logic to get path, e.g from server
+    }
+  }
+  ```
+
+2. Указать свой класс в настройках:
+  ```typescript
+  JwtAuthModule.forRoot({
+    [...],
+    redirectToLastPage: CustomLastPageWatcher
+  })
+  ```
 
 ## Troubleshooting
 
