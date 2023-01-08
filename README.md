@@ -12,9 +12,9 @@ This library is configurable for any use cases.
 - [Russian](../../doc/ru/README.md)
 
 ## Version Compliance
-Angular version | 13 | 14 |
---- | --- | ---|
-ngx-jwt-auth version | 1 | 2 |
+Angular version | 13 | 14 | 15 |
+--- | --- | --- | --- |
+ngx-jwt-auth version | 1 | 2 | 15 |
 
 ## Content
 - [Description](#description)
