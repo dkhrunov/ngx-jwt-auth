@@ -9,7 +9,7 @@ This library is configurable for any use cases.
 </a>
 
 ## Other languages
-- [Russian](../../doc/ru/README.md)
+- [Russian](../../blob/master/doc/ru/README.md)
 
 ## Version Compliance
 Angular version | 13 | 14 | 15 |
