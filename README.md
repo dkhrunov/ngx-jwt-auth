@@ -24,6 +24,7 @@ ngx-jwt-auth version | 1 | 2 | 15 |
 - [Creating your own Token Storage](#creating-your-own-token-storage)
 - [Changing token storage at runtime](#changing-token-storage-at-runtime)
 - [Creating your own LastPageWatcher](#creating-your-own-lastpagewatcher)
+- [Diagrams](#diagrams)
 - [Troubleshooting](#troubleshooting)
 
 ## Description
@@ -516,6 +517,28 @@ export class TokenStorageChangerService {
     redirectToLastPage: CustomLastPageWatcher
   })
   ```
+
+## Diagrams
+
+### Authentication Process sequence diagram
+
+![Authentication Process sequence diagram](./img/JWT_Auth_Sequence_Diagram.drawio.png)
+
+### Refresh jwt token sequence diagram
+
+![Refresh jwt token sequence diagram](./img/JWT_Auth_Refresh_Token_Sequence_Diagram.drawio.png)
+
+### JwtAuthInterceprot: sequence diagram
+
+![JwtAuthInterceprot sequence diagram](./img/Jwt_Auth_Interceptor_Sequence_Diagram.drawio.png)
+
+### AuthGuard: sequence diagram
+
+![JwtAuthInterceprot sequence diagram](./img/Jwt_Auth_Interceptor_Sequence_Diagram.drawio.png)
+
+### TokenManager: UML diagram
+
+![JwtAuthInterceprot sequence diagram](./img/TokenManager.drawio.png)
 
 ## Troubleshooting
 
